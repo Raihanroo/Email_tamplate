@@ -9,6 +9,7 @@ from datetime import timedelta
 import pandas as pd
 import time
 import requests
+import threading
 
 from .models import Student
 from .serializers import StudentSerializer
@@ -16,6 +17,41 @@ from .serializers import StudentSerializer
 # Rate limiting: 20 emails per hour
 EMAILS_PER_HOUR = 20
 EMAIL_DELAY_SECONDS = 3600 / EMAILS_PER_HOUR  # 180 seconds = 3 minutes between emails
+
+
+def send_emails_in_background():
+    """Background thread to send pending emails continuously"""
+    while True:
+        try:
+            # Get pending students (limit 20)
+            students = Student.objects.filter(email_sent=False)[:EMAILS_PER_HOUR]
+            
+            if not students.exists():
+                # No pending emails, wait 5 minutes and check again
+                time.sleep(300)
+                continue
+            
+            # Send emails with delay
+            for student in students:
+                try:
+                    send_course_email(student)
+                    student.email_sent = True
+                    student.save()
+                    print(f"✅ Email sent to {student.email}")
+                    
+                    # Wait 3 minutes before next email
+                    time.sleep(EMAIL_DELAY_SECONDS)
+                except Exception as e:
+                    print(f"❌ Failed to send to {student.email}: {str(e)}")
+                    
+        except Exception as e:
+            print(f"Background task error: {str(e)}")
+            time.sleep(60)  # Wait 1 minute on error
+
+
+# Start background thread when module loads
+background_thread = threading.Thread(target=send_emails_in_background, daemon=True)
+background_thread.start()
 
 
 def send_sms(mobile, name, course_name, link):
@@ -158,7 +194,7 @@ Innovative Skills BD"""
 
 
 class UploadStudentsView(APIView):
-    """Upload Excel file - emails will be sent gradually (20 per hour)"""
+    """Upload Excel file - emails will be sent automatically in background"""
     
     def post(self, request):
         file = request.FILES.get('file')
@@ -200,10 +236,7 @@ class UploadStudentsView(APIView):
             }, status=400)
 
         imported = 0
-        emails_sent = 0
-        failed_emails = []
         skipped_rows = 0
-        email_count_this_batch = 0
 
         for index, row in df.iterrows():
             try:
@@ -236,21 +269,6 @@ class UploadStudentsView(APIView):
                 
                 if created:
                     imported += 1
-                
-                # Send email with rate limiting (20 per hour)
-                if not student.email_sent and email_count_this_batch < EMAILS_PER_HOUR:
-                    try:
-                        send_course_email(student)
-                        student.email_sent = True
-                        student.save()
-                        emails_sent += 1
-                        email_count_this_batch += 1
-                        
-                        # Add delay between emails (3 minutes)
-                        if email_count_this_batch < EMAILS_PER_HOUR:
-                            time.sleep(EMAIL_DELAY_SECONDS)
-                    except Exception as email_error:
-                        failed_emails.append(f"{student.email}: {str(email_error)}")
                         
             except Exception as e:
                 return Response({'error': f'Error processing row: {str(e)}'}, status=400)
@@ -258,16 +276,13 @@ class UploadStudentsView(APIView):
         pending_count = Student.objects.filter(email_sent=False).count()
         
         response_data = {
-            'message': f'{imported} new students imported, {emails_sent} emails sent!',
+            'message': f'{imported} new students imported! Emails will be sent automatically in background.',
             'pending': pending_count,
-            'info': f'Rate limit: 20 emails/hour. {pending_count} emails pending.'
+            'info': f'Background system will send 20 emails per hour automatically. {pending_count} emails in queue.'
         }
         
         if skipped_rows > 0:
             response_data['warning'] = f'{skipped_rows} incomplete rows skipped'
-            
-        if failed_emails:
-            response_data['failed_emails'] = failed_emails
             
         return Response(response_data)
 
