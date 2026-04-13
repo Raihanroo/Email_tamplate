@@ -170,10 +170,34 @@ class UploadStudentsView(APIView):
         except Exception as e:
             return Response({'error': f'Failed to read Excel file: {str(e)}'}, status=400)
 
+        # Flexible column mapping - case insensitive
+        column_mapping = {}
+        df_columns = df.columns.str.strip().str.lower()
+        
+        # Map columns flexibly
+        for col in df.columns:
+            col_lower = col.strip().lower()
+            if 'name' in col_lower and 'course' not in col_lower:
+                column_mapping['Name'] = col
+            elif 'email' in col_lower or 'mail' in col_lower:
+                column_mapping['Email'] = col
+            elif 'mobile' in col_lower or 'phone' in col_lower or 'number' in col_lower:
+                column_mapping['Mobile'] = col
+            elif 'course' in col_lower:
+                column_mapping['Course Name'] = col
+            elif 'link' in col_lower or 'url' in col_lower:
+                column_mapping['Link'] = col
+        
+        # Check required columns
         required_columns = ['Name', 'Email', 'Course Name', 'Link']
-        missing_columns = [col for col in required_columns if col not in df.columns]
+        missing_columns = [col for col in required_columns if col not in column_mapping]
         if missing_columns:
-            return Response({'error': f'Missing columns: {", ".join(missing_columns)}'}, status=400)
+            available_cols = ', '.join(df.columns.tolist())
+            return Response({
+                'error': f'Missing columns: {", ".join(missing_columns)}',
+                'available_columns': available_cols,
+                'hint': 'Column names should contain: name, email, course, link'
+            }, status=400)
 
         imported = 0
         emails_sent = 0
@@ -183,27 +207,30 @@ class UploadStudentsView(APIView):
 
         for index, row in df.iterrows():
             try:
+                # Get values using mapped column names
+                name = row[column_mapping['Name']] if 'Name' in column_mapping else None
+                email = row[column_mapping['Email']] if 'Email' in column_mapping else None
+                course_name = row[column_mapping['Course Name']] if 'Course Name' in column_mapping else None
+                link = row[column_mapping['Link']] if 'Link' in column_mapping else None
+                mobile = row[column_mapping.get('Mobile', '')] if 'Mobile' in column_mapping and not pd.isna(row.get(column_mapping.get('Mobile', ''))) else None
+                
                 # Check if all required fields are present and not empty
-                required_fields = ['Name', 'Email', 'Course Name', 'Link']
-                if any(pd.isna(row[field]) for field in required_fields):
+                if pd.isna(name) or pd.isna(email) or pd.isna(course_name) or pd.isna(link):
                     skipped_rows += 1
                     continue
                 
                 # Check if fields are not empty strings
-                if not all(str(row[field]).strip() for field in required_fields):
+                if not str(name).strip() or not str(email).strip() or not str(course_name).strip() or not str(link).strip():
                     skipped_rows += 1
                     continue
                 
-                # Get mobile (optional field)
-                mobile = str(row.get('Mobile', '')).strip() if 'Mobile' in row and not pd.isna(row.get('Mobile')) else None
-                
                 student, created = Student.objects.get_or_create(
-                    email=row['Email'],
+                    email=email,
                     defaults={
-                        'name': row['Name'],
-                        'course_name': row['Course Name'],
-                        'link': row['Link'],
-                        'mobile': mobile,
+                        'name': name,
+                        'course_name': course_name,
+                        'link': link,
+                        'mobile': str(mobile).strip() if mobile else None,
                     }
                 )
                 
