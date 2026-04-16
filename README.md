@@ -1,40 +1,22 @@
-# 📧 Email Automation System
+# 📧 Email Automation System - Innovative Skills BD
 
-Professional email automation system with **background processing** for course enrollment management.
+Professional email automation system for sending personalized course enrollment emails with custom templates and real-time tracking.
 
 ![Django](https://img.shields.io/badge/Django-5.2.1-green)
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![Status](https://img.shields.io/badge/Status-Production%20Ready-success)
 
+---
+
 ## ✨ Key Features
 
-### 🚀 Background Email Processing (NEW!)
-- **Instant Upload** - File upload completes in 5 seconds
-- **Automatic Sending** - Background system sends emails continuously
-- **Zero Wait Time** - No need to wait during upload
-- **Smart Queue** - Processes 20 emails per hour automatically
-- **Auto-Restart** - Checks for pending emails every 5 minutes
-
-### 📧 Email Management
-- Professional HTML email templates
-- Gmail SMTP with TLS encryption
-- Rate limiting (20 emails/hour - Gmail safe)
-- Plain text fallback for compatibility
-- Personalized content with student details
-
-### 📊 Data Management
-- Excel file upload with drag & drop
-- Flexible column detection (case-insensitive)
-- Real-time statistics dashboard
-- Delete individual or all records
-- Mobile number storage for future use
-
-### 🎨 Beautiful UI
-- Animated gradient background
-- Circular action buttons with hover effects
-- Real-time status tracking
-- Responsive design for all devices
-- Success/error notifications
+- 📤 **Excel Upload** - Import student data instantly
+- ✉️ **Custom Templates** - Create personalized emails with placeholders
+- 🔘 **Smart Buttons** - `{link}` placeholder becomes clickable button
+- 📱 **Mobile Optimized** - Perfect on all devices
+- 🔄 **Real-Time Updates** - See email status update live
+- 🎨 **Brand Colors** - Dark navy blue + orange design
+- 🎯 **Manual Control** - Send emails only when you want
 
 ---
 
@@ -52,7 +34,7 @@ EMAIL_HOST_USER = 'your-email@gmail.com'
 EMAIL_HOST_PASSWORD = 'your-app-password'
 ```
 
-**Get App Password:** https://myaccount.google.com/apppasswords
+Get App Password: https://myaccount.google.com/apppasswords
 
 ### 3. Run Migrations
 ```bash
@@ -71,89 +53,102 @@ http://127.0.0.1:8000/
 
 ---
 
+## 📖 How to Use
+
+### Step 1: Upload Excel File
+- Drag & drop Excel file with columns: Name, Email, Mobile, Course Name, Link
+- Data saved to database
+- **NO emails sent yet**
+
+### Step 2: Create Custom Template
+- Click "Create Template" button
+- Write subject and message
+- Use placeholders:
+  - `{name}` → Student name
+  - `{course_name}` → Course name
+  - `{link}` → Clickable button
+- Click "Send to All Students"
+
+### Step 3: Monitor Progress
+- Table auto-refreshes every 1 second
+- See "✓ Sent" status appear in real-time
+- Statistics update automatically
+
+---
+
 ## 📋 Excel File Format
 
 | Name | Email | Mobile | Course Name | Link |
 |------|-------|--------|-------------|------|
-| John Doe | john@example.com | 01712345678 | Python | https://... |
-| Jane Smith | jane@example.com | 01812345678 | Web Dev | https://... |
+| Raihan Islam | raihan@example.com | 01712345678 | Python Programming | https://... |
+| Kabir Hossain | kabir@example.com | 01812345678 | Web Development | https://... |
 
-**Required Columns:** Name, Email, Course Name, Link  
-**Optional Column:** Mobile
-
-**Note:** Column names are flexible (case-insensitive)
+**Required:** Name, Email, Course Name, Link  
+**Optional:** Mobile
 
 ---
 
-## 🤖 How Background System Works
-
-### Upload Process
-```
-1. Upload Excel file → Done in 5 seconds ✅
-2. All students saved to database
-3. Response returned immediately
-```
-
-### Background Process (Automatic)
-```
-Server running → Background thread active
-   ↓
-Every 5 minutes: Check for pending emails
-   ↓
-If pending found:
-   - Send 20 emails
-   - 3 minute delay between each
-   - Mark as sent
-   - Repeat
-```
-
-### Timeline Example
-```
-10:00 → Upload 100 students (5 sec)
-10:00 → Email 1 sent (background)
-10:03 → Email 2 sent (background)
-10:06 → Email 3 sent (background)
-...
-10:57 → Email 20 sent (background)
-11:00 → Email 21 sent (background)
-...continues automatically...
-```
-
-**Result:** 100 emails sent in 5 hours, fully automatic!
-
----
-
-## 🎯 API Endpoints
+## 🔌 API Endpoints
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/` | GET | Main UI page |
-| `/api/upload/` | POST | Upload Excel (instant) |
+| `/api/upload/` | POST | Upload Excel file |
 | `/api/students/` | GET | Get all students |
-| `/api/send-emails/` | POST | Manual send (optional) |
-| `/api/send-email/<id>/` | POST | Send to specific student |
-| `/api/notify-admin/<id>/` | POST | Admin notification |
+| `/api/send-template/` | POST | Send custom template |
 | `/api/delete-student/<id>/` | DELETE | Delete student |
 | `/api/delete-all/` | DELETE | Delete all students |
 
 ---
 
-## 📊 Performance
+## 📧 Email Template
 
-- **Upload Speed:** 100 rows in < 5 seconds
-- **Email Rate:** 20 per hour (automatic)
-- **Database:** Handles 1000+ students
-- **Response Time:** < 1 second for queries
+### Design:
+```
+┌─────────────────────────────┐
+│   DARK NAVY HEADER          │
+│   Innovative Skills BD      │
+├─────────────────────────────┤
+│ Your custom message...      │
+│                             │
+│ [🚀 Click Here to Continue] │ ← Orange button
+│                             │
+│ ┌─────────────────────┐     │
+│ │ 💡 Need Help?       │     │
+│ └─────────────────────┘     │
+├─────────────────────────────┤
+│   DARK NAVY FOOTER          │
+│   Contact Information       │
+└─────────────────────────────┘
+```
+
+### Colors:
+- **Header/Footer:** `#0a1628` (Dark Navy Blue)
+- **Button/Accents:** `#ff6b35` (Orange/Coral)
+- **Text:** `#ffffff` (White on dark)
 
 ---
 
-## 🔐 Security
+## 🗄️ Database Models
 
-- TLS encryption for emails
-- App Password authentication
-- Input validation
-- Error handling
-- .gitignore configured
+### Student:
+```python
+- name: CharField
+- email: EmailField
+- mobile: CharField (optional)
+- course_name: CharField
+- link: URLField
+- email_sent: BooleanField
+- template_sent: BooleanField
+```
+
+### EmailTemplate:
+```python
+- subject: CharField
+- message: TextField
+- created_at: DateTimeField
+- sent_count: IntegerField
+```
 
 ---
 
@@ -161,75 +156,128 @@ If pending found:
 
 - **Backend:** Django 5.2.1, Django REST Framework
 - **Database:** SQLite (dev), PostgreSQL (prod)
-- **Email:** Gmail SMTP
-- **Background:** Python Threading
+- **Email:** Gmail SMTP with TLS
 - **Frontend:** HTML5, CSS3, JavaScript
 - **Data:** pandas, openpyxl
 
 ---
 
-## 📝 Usage
+## 📊 Workflow
 
-### 1. Upload Excel File
-- Drag & drop or click to select
-- File validates automatically
-- Upload completes instantly
-
-### 2. Monitor Progress
-- Check statistics dashboard
-- View pending count
-- Track sent emails
-
-### 3. Manage Data
-- View all students in table
-- Delete individual records
-- Clear all data
-
-### 4. Background System
-- Runs automatically
-- No manual intervention needed
-- Sends 20 emails/hour
+```
+Upload Excel → Data Saved (No Email)
+     ↓
+Create Template → Write Subject & Message
+     ↓
+Use Placeholders → {name}, {course_name}, {link}
+     ↓
+Submit Template → Emails Sent to ALL
+     ↓
+Real-Time Updates → Table Refreshes Every 1s
+     ↓
+Monitor Progress → See "✓ Sent" Status
+```
 
 ---
 
-## ⚡ Rate Limiting
+## 🎯 Key Highlights
 
-### Why 20 Emails Per Hour?
-- **Gmail Limit:** 500 emails/day for free accounts
-- **Safety:** Prevents account suspension
-- **Natural Pattern:** Looks like human sending
-- **Reliable:** Avoids spam filters
+### Manual Email Control:
+- ✅ Excel upload does NOT send emails
+- ✅ Emails sent ONLY via custom template
+- ✅ Full control over timing
+- ✅ No automatic background sending
 
-### Timeline
-- **20 emails:** 1 hour
-- **100 emails:** 5 hours
-- **500 emails:** 25 hours (1 day)
+### Real-Time Updates:
+- ✅ Table refreshes every 1 second
+- ✅ See progressive "✓ Sent" status
+- ✅ Auto-stops after 30 seconds
+- ✅ Manual refresh available
+
+### Mobile-Friendly Button:
+- ✅ `{link}` becomes clickable button
+- ✅ Works on all email clients
+- ✅ Large tap target for mobile
+- ✅ Orange color matches brand
 
 ---
 
-## 🎨 UI Features
+## 🔧 Configuration
 
-- Animated dot pattern background
-- Circular action buttons
-- Status badges (Sent/Pending)
-- Real-time statistics
-- Loading indicators
-- Success/error alerts
-- Mobile responsive
+### Email Settings (settings.py):
+```python
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your-email@gmail.com'
+EMAIL_HOST_PASSWORD = 'your-app-password'
+```
+
+### Required Packages (requirements.txt):
+```
+Django==5.2.1
+djangorestframework==3.14.0
+pandas==2.0.3
+openpyxl==3.1.2
+```
 
 ---
 
 ## 📚 Documentation
 
-- **README.md** - This file
-- **TECHNICAL_DOCUMENTATION.md** - Complete technical details
-- **LICENSE** - MIT License
+**Complete Documentation:** See `PROJECT_DOCUMENTATION.md` for:
+- Detailed API documentation
+- Email template system
+- Database schema
+- Technical architecture
+- Troubleshooting guide
+- Performance tips
+
+---
+
+## 🐛 Troubleshooting
+
+### Emails Not Sending?
+- Check Gmail credentials
+- Verify App Password
+- Check internet connection
+- Look for errors in terminal
+
+### Excel Upload Fails?
+- Ensure required columns exist
+- Check for empty rows
+- Verify file format (.xlsx or .xls)
+
+### Table Not Updating?
+- Check browser console (F12)
+- Try manual refresh button
+- Clear browser cache
+
+---
+
+## 🔐 Security
+
+- ✅ CSRF protection enabled
+- ✅ TLS encryption for emails
+- ✅ App Password authentication
+- ✅ Input validation
+- ✅ XSS protection
+
+---
+
+## 📈 Performance
+
+- **Upload Speed:** 100 rows in < 5 seconds
+- **Email Speed:** ~1 email per second
+- **Database:** Handles 1000+ students
+- **Response Time:** < 1 second
 
 ---
 
 ## 🚀 Deployment
 
-### Production Checklist
+### Production Checklist:
 - [ ] Set `DEBUG = False`
 - [ ] Configure `ALLOWED_HOSTS`
 - [ ] Use environment variables
@@ -261,7 +309,7 @@ For issues or questions, open an issue on GitHub.
 
 ---
 
-## 📄 License
+## 📝 License
 
 MIT License - Free for personal and commercial use
 
@@ -280,16 +328,44 @@ MIT License - Free for personal and commercial use
 
 ## ⭐ Features Highlight
 
-✅ Background email processing  
-✅ Instant file upload  
-✅ Automatic rate limiting  
-✅ Professional HTML emails  
-✅ Real-time tracking  
-✅ Beautiful UI  
-✅ Mobile responsive  
-✅ Error handling  
+✅ Manual email control (no auto-send)  
+✅ Custom email templates  
+✅ {link} converts to clickable button  
+✅ Real-time table updates  
+✅ Mobile-responsive design  
+✅ Brand-consistent colors  
+✅ Excel file upload  
 ✅ Flexible column detection  
+✅ Statistics dashboard  
 ✅ Production ready  
+
+---
+
+## 📸 Screenshots
+
+### Main Dashboard
+- Upload section with drag & drop
+- Statistics cards (Total, Sent, Pending)
+- Student table with status
+- Action buttons
+
+### Custom Template Modal
+- Subject input
+- Message textarea
+- Placeholder buttons
+- Send to All button
+
+### Email Preview
+- Dark navy header
+- Custom message
+- Orange clickable button
+- Professional footer
+
+---
+
+**Version:** 2.0  
+**Last Updated:** April 15, 2026  
+**Status:** Production Ready ✅
 
 ---
 

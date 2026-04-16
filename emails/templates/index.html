@@ -426,6 +426,155 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
         }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .close {
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            line-height: 1;
+        }
+
+        .close:hover {
+            transform: scale(1.2);
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        .form-hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .modal-footer {
+            padding: 20px 30px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .placeholder-btn {
+            padding: 6px 12px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .placeholder-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
@@ -454,9 +603,16 @@
                 <div class="upload-subtext">Excel file (.xlsx, .xls) with columns: Name, Email, Mobile, Course Name, Link</div>
                 <input type="file" id="fileInput" accept=".xlsx,.xls">
             </div>
+            <div style="text-align: center; margin-top: 15px;">
+                <label style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #fff3cd; border-radius: 10px; cursor: pointer; font-weight: 600; color: #856404; border: 2px solid #ffeaa7;">
+                    <input type="checkbox" id="replaceAllCheckbox" style="width: 18px; height: 18px; cursor: pointer;">
+                    <span>🔄 Replace all existing data (Delete old data before upload)</span>
+                </label>
+            </div>
             <div style="text-align: center; margin-top: 20px;">
                 <button class="btn btn-primary" id="uploadBtn" disabled>📤 Upload & Import</button>
                 <button class="btn btn-success" id="sendAllBtn" disabled>✉️ Send All Emails</button>
+                <button class="btn btn-primary" id="createTemplateBtn">📝 Create Template</button>
                 <button class="btn btn-danger" id="deleteAllBtn" disabled>🗑️ Delete All Data</button>
             </div>
         </div>
@@ -500,6 +656,47 @@
         </div>
     </div>
 
+    <!-- Template Modal -->
+    <div id="templateModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📝 Create Custom Email Template</h2>
+                <span class="close" id="closeModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="templateForm">
+                    <div class="form-group">
+                        <label for="templateSubject">Subject *</label>
+                        <input 
+                            type="text" 
+                            id="templateSubject" 
+                            placeholder="Enter email subject"
+                            required
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="templateMessage">Message *</label>
+                        <textarea 
+                            id="templateMessage" 
+                            placeholder="Enter your message here..."
+                            required
+                        ></textarea>
+                        <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;" id="messagePlaceholders">
+                            <!-- Dynamic buttons will be inserted here -->
+                        </div>
+                        <div class="form-hint">
+                            💡 Click buttons to insert {name}, {course_name}, {link} - will be replaced automatically for each student
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                <button class="btn btn-success" id="submitTemplateBtn">📧 Send to All Students</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
@@ -507,6 +704,12 @@
         const sendAllBtn = document.getElementById('sendAllBtn');
         const deleteAllBtn = document.getElementById('deleteAllBtn');
         const refreshBtn = document.getElementById('refreshBtn');
+        const createTemplateBtn = document.getElementById('createTemplateBtn');
+        const templateModal = document.getElementById('templateModal');
+        const closeModal = document.getElementById('closeModal');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const submitTemplateBtn = document.getElementById('submitTemplateBtn');
+        const templateForm = document.getElementById('templateForm');
         const loading = document.getElementById('loading');
         const alertSuccess = document.getElementById('alertSuccess');
         const alertError = document.getElementById('alertError');
@@ -551,8 +754,18 @@
         uploadBtn.addEventListener('click', async () => {
             if (!selectedFile) return;
 
+            const replaceAll = document.getElementById('replaceAllCheckbox').checked;
+
+            // Show confirmation if replace all is checked
+            if (replaceAll) {
+                if (!confirm('⚠️ This will DELETE all existing data and upload new data. Are you sure?')) {
+                    return;
+                }
+            }
+
             const formData = new FormData();
             formData.append('file', selectedFile);
+            formData.append('replace_all', replaceAll);
 
             loading.style.display = 'block';
             uploadBtn.disabled = true;
@@ -570,9 +783,13 @@
                     if (data.warning) {
                         showAlert('warning', data.warning);
                     }
+                    if (data.deleted_count) {
+                        showAlert('warning', `🗑️ Deleted ${data.deleted_count} old records before upload`);
+                    }
                     loadStudents();
                     selectedFile = null;
                     fileInput.value = '';
+                    document.getElementById('replaceAllCheckbox').checked = false;
                     uploadArea.querySelector('.upload-text').textContent = 'Click to upload or drag and drop';
                 } else {
                     showAlert('error', data.error || 'Upload failed');
@@ -691,7 +908,7 @@
                             <th>Mobile</th>
                             <th>Course Name</th>
                             <th>Link</th>
-                            <th>Status</th>
+                            <th>Template Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -709,19 +926,12 @@
                                     </a>
                                 </td>
                                 <td>
-                                    <span class="status-badge ${student.email_sent ? 'status-sent' : 'status-pending'}">
-                                        ${student.email_sent ? '✓ Sent' : '⏳ Pending'}
+                                    <span class="status-badge ${student.template_sent ? 'status-sent' : 'status-pending'}">
+                                        ${student.template_sent ? '✓ Sent' : '⏳ Not Sent'}
                                     </span>
                                 </td>
                                 <td>
                                     <div class="action-cell">
-                                        <button 
-                                            class="icon-btn send" 
-                                            onclick="sendSingleEmail(${student.id})" 
-                                            ${student.email_sent ? 'disabled' : ''}
-                                            title="${student.email_sent ? 'Already sent' : 'Send email'}">
-                                            ${student.email_sent ? '✓' : '📧'}
-                                        </button>
                                         <button 
                                             class="icon-btn delete" 
                                             onclick="deleteStudent(${student.id}, '${student.name}')"
@@ -847,6 +1057,161 @@
                 alert.style.display = 'none';
             }, 5000);
         }
+
+        // Modal functionality
+        createTemplateBtn.addEventListener('click', () => {
+            templateModal.style.display = 'block';
+            createPlaceholderButtons();
+        });
+
+        // Create dynamic placeholder buttons
+        function createPlaceholderButtons() {
+            const messageContainer = document.getElementById('messagePlaceholders');
+            
+            const placeholders = [
+                { text: '👤 Name', value: '{name}' },
+                { text: '📚 Course Name', value: '{course_name}' },
+                { text: '🔗 Link', value: '{link}' }
+            ];
+            
+            // Clear existing buttons
+            messageContainer.innerHTML = '';
+            
+            // Create buttons for message only
+            placeholders.forEach(placeholder => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'placeholder-btn';
+                btn.textContent = placeholder.text;
+                btn.onclick = () => insertPlaceholder('templateMessage', placeholder.value);
+                messageContainer.appendChild(btn);
+            });
+        }
+
+        // Insert placeholder at cursor position
+        function insertPlaceholder(fieldId, placeholder) {
+            const field = document.getElementById(fieldId);
+            const startPos = field.selectionStart;
+            const endPos = field.selectionEnd;
+            const currentValue = field.value;
+            
+            // Insert placeholder at cursor position
+            const newValue = currentValue.substring(0, startPos) + placeholder + currentValue.substring(endPos);
+            field.value = newValue;
+            
+            // Set cursor position after inserted placeholder
+            const newCursorPos = startPos + placeholder.length;
+            field.setSelectionRange(newCursorPos, newCursorPos);
+            field.focus();
+        }
+
+        closeModal.addEventListener('click', () => {
+            templateModal.style.display = 'none';
+            templateForm.reset();
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            templateModal.style.display = 'none';
+            templateForm.reset();
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (event) => {
+            if (event.target === templateModal) {
+                templateModal.style.display = 'none';
+                templateForm.reset();
+            }
+        });
+
+        // Submit template
+        submitTemplateBtn.addEventListener('click', async () => {
+            const subject = document.getElementById('templateSubject').value.trim();
+            const message = document.getElementById('templateMessage').value.trim();
+
+            if (!subject || !message) {
+                showAlert('error', 'Please fill in both subject and message');
+                return;
+            }
+
+            if (!confirm('Send this custom template to ALL students? (Everyone will receive this email)')) {
+                return;
+            }
+
+            loading.style.display = 'block';
+            submitTemplateBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/send-template/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        subject: subject,
+                        message: message
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('success', data.message + ' - Table will update automatically...');
+                    templateModal.style.display = 'none';
+                    templateForm.reset();
+                    
+                    // Start auto-refresh to show real-time updates
+                    startAutoRefresh();
+                } else {
+                    showAlert('error', data.error || 'Failed to send template');
+                }
+            } catch (error) {
+                showAlert('error', 'Network error: ' + error.message);
+            } finally {
+                loading.style.display = 'none';
+                submitTemplateBtn.disabled = false;
+            }
+        });
+
+        // Auto-refresh functionality for real-time updates
+        let autoRefreshInterval = null;
+        let refreshCount = 0;
+        const MAX_REFRESHES = 30; // Refresh for max 30 times (30 seconds if 1s interval)
+
+        function startAutoRefresh() {
+            // Clear any existing interval
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
+            
+            refreshCount = 0;
+            
+            // Refresh every 1 second to show real-time updates
+            autoRefreshInterval = setInterval(() => {
+                refreshCount++;
+                loadStudents();
+                
+                // Stop after MAX_REFRESHES or when all emails are sent
+                if (refreshCount >= MAX_REFRESHES) {
+                    stopAutoRefresh();
+                }
+            }, 1000); // 1 second interval
+            
+            console.log('🔄 Auto-refresh started - table will update every 1 second');
+        }
+
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+                console.log('⏹️ Auto-refresh stopped');
+            }
+        }
+
+        // Stop auto-refresh when user manually refreshes
+        refreshBtn.addEventListener('click', () => {
+            stopAutoRefresh();
+            loadStudents();
+        });
 
         // Load students on page load
         loadStudents();
