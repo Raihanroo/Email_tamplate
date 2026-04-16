@@ -2,6 +2,10 @@
 
 Professional email automation system for sending personalized course enrollment emails with custom templates and real-time tracking.
 
+
+<img width="797" height="781" alt="image" src="https://github.com/user-attachments/assets/f26a363f-c250-4fbc-979c-a0f13b35f46c" />
+
+
 ![Django](https://img.shields.io/badge/Django-5.2.1-green)
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![Status](https://img.shields.io/badge/Status-Production%20Ready-success)
