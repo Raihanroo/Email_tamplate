@@ -697,19 +697,80 @@
         </div>
     </div>
 
+    <!-- Data Entry Modal -->
+    <div id="dataEntryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>➕ Add New Student</h2>
+                <span class="close" id="closeDataEntryModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="dataEntryForm">
+                    <div class="form-group">
+                        <label for="studentName">Name *</label>
+                        <input 
+                            type="text" 
+                            id="studentName" 
+                            placeholder="Enter student name"
+                            required
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="studentEmail">Email *</label>
+                        <input 
+                            type="email" 
+                            id="studentEmail" 
+                            placeholder="Enter email address"
+                            required
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="studentMobile">Mobile</label>
+                        <input 
+                            type="text" 
+                            id="studentMobile" 
+                            placeholder="Enter mobile number (optional)"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="studentCourse">Course Name *</label>
+                        <select id="studentCourse" required>
+                            <option value="">Select a course</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="studentLink">Link *</label>
+                        <select id="studentLink" required>
+                            <option value="">Select a link</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelDataEntryBtn">Cancel</button>
+                <button class="btn btn-success" id="submitDataEntryBtn">✅ Add Student</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
         const uploadBtn = document.getElementById('uploadBtn');
-        const sendAllBtn = document.getElementById('sendAllBtn');
+        const dataEntryBtn = document.getElementById('dataEntryBtn');
         const deleteAllBtn = document.getElementById('deleteAllBtn');
         const refreshBtn = document.getElementById('refreshBtn');
         const createTemplateBtn = document.getElementById('createTemplateBtn');
         const templateModal = document.getElementById('templateModal');
+        const dataEntryModal = document.getElementById('dataEntryModal');
         const closeModal = document.getElementById('closeModal');
+        const closeDataEntryModal = document.getElementById('closeDataEntryModal');
         const cancelBtn = document.getElementById('cancelBtn');
+        const cancelDataEntryBtn = document.getElementById('cancelDataEntryBtn');
         const submitTemplateBtn = document.getElementById('submitTemplateBtn');
+        const submitDataEntryBtn = document.getElementById('submitDataEntryBtn');
         const templateForm = document.getElementById('templateForm');
+        const dataEntryForm = document.getElementById('dataEntryForm');
         const loading = document.getElementById('loading');
         const alertSuccess = document.getElementById('alertSuccess');
         const alertError = document.getElementById('alertError');
@@ -717,6 +778,8 @@
         const stats = document.getElementById('stats');
         
         let selectedFile = null;
+        let availableCourses = new Set();
+        let availableLinks = new Set();
 
         // Upload area click
         uploadArea.addEventListener('click', () => fileInput.click());
@@ -801,33 +864,94 @@
             }
         });
 
-        // Send all emails
-        sendAllBtn.addEventListener('click', async () => {
-            if (!confirm('Send emails to all pending students?')) return;
+        // Data Entry Modal handlers
+        dataEntryBtn.addEventListener('click', () => {
+            populateDropdowns();
+            dataEntryModal.style.display = 'block';
+        });
+
+        closeDataEntryModal.addEventListener('click', () => {
+            dataEntryModal.style.display = 'none';
+            dataEntryForm.reset();
+        });
+
+        cancelDataEntryBtn.addEventListener('click', () => {
+            dataEntryModal.style.display = 'none';
+            dataEntryForm.reset();
+        });
+
+        // Submit data entry form
+        submitDataEntryBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            if (!dataEntryForm.checkValidity()) {
+                dataEntryForm.reportValidity();
+                return;
+            }
+
+            const formData = {
+                name: document.getElementById('studentName').value,
+                email: document.getElementById('studentEmail').value,
+                mobile: document.getElementById('studentMobile').value || '',
+                course_name: document.getElementById('studentCourse').value,
+                link: document.getElementById('studentLink').value
+            };
 
             loading.style.display = 'block';
-            sendAllBtn.disabled = true;
+            submitDataEntryBtn.disabled = true;
 
             try {
-                const response = await fetch('/api/send-emails/', {
-                    method: 'POST'
+                const response = await fetch('/api/add-student/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
-                    showAlert('success', data.message);
+                    showAlert('success', '✅ Student added successfully!');
+                    dataEntryModal.style.display = 'none';
+                    dataEntryForm.reset();
                     loadStudents();
                 } else {
-                    showAlert('error', data.error || 'Failed to send emails');
+                    showAlert('error', data.error || 'Failed to add student');
                 }
             } catch (error) {
                 showAlert('error', 'Network error: ' + error.message);
             } finally {
                 loading.style.display = 'none';
-                sendAllBtn.disabled = false;
+                submitDataEntryBtn.disabled = false;
             }
         });
+
+        // Populate dropdowns with unique courses and links
+        function populateDropdowns() {
+            const courseSelect = document.getElementById('studentCourse');
+            const linkSelect = document.getElementById('studentLink');
+            
+            // Clear existing options except first
+            courseSelect.innerHTML = '<option value="">Select a course</option>';
+            linkSelect.innerHTML = '<option value="">Select a link</option>';
+            
+            // Add unique courses
+            availableCourses.forEach(course => {
+                const option = document.createElement('option');
+                option.value = course;
+                option.textContent = course;
+                courseSelect.appendChild(option);
+            });
+            
+            // Add unique links
+            availableLinks.forEach(link => {
+                const option = document.createElement('option');
+                option.value = link;
+                option.textContent = link.length > 50 ? link.substring(0, 50) + '...' : link;
+                linkSelect.appendChild(option);
+            });
+        }
 
         // Refresh button
         refreshBtn.addEventListener('click', loadStudents);
@@ -869,6 +993,14 @@
                 const response = await fetch('/api/students/');
                 const students = await response.json();
 
+                // Collect unique courses and links
+                availableCourses.clear();
+                availableLinks.clear();
+                students.forEach(student => {
+                    if (student.course_name) availableCourses.add(student.course_name);
+                    if (student.link) availableLinks.add(student.link);
+                });
+
                 if (students.length === 0) {
                     document.getElementById('tableContent').innerHTML = `
                         <div class="empty-state">
@@ -878,15 +1010,11 @@
                         </div>
                     `;
                     stats.style.display = 'none';
-                    sendAllBtn.disabled = true;
                     deleteAllBtn.disabled = true;
                 } else {
                     renderTable(students);
                     updateStats(students);
                     stats.style.display = 'grid';
-                    
-                    const hasPending = students.some(s => !s.email_sent);
-                    sendAllBtn.disabled = !hasPending;
                     deleteAllBtn.disabled = false;
                 }
             } catch (error) {

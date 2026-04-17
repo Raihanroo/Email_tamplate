@@ -415,3 +415,45 @@ class DeleteAllStudentsView(APIView):
         count = Student.objects.count()
         Student.objects.all().delete()
         return Response({'message': f'All {count} students deleted successfully'})
+
+
+
+class AddStudentView(APIView):
+    """Add a single student manually"""
+    
+    def post(self, request):
+        try:
+            data = request.data
+            
+            # Validate required fields
+            required_fields = ['name', 'email', 'course_name', 'link']
+            for field in required_fields:
+                if not data.get(field):
+                    return Response({
+                        'error': f'{field} is required'
+                    }, status=400)
+            
+            # Check if email already exists
+            if Student.objects.filter(email=data['email']).exists():
+                return Response({
+                    'error': 'A student with this email already exists'
+                }, status=400)
+            
+            # Create student
+            student = Student.objects.create(
+                name=data['name'],
+                email=data['email'],
+                mobile=data.get('mobile', ''),
+                course_name=data['course_name'],
+                link=data['link']
+            )
+            
+            return Response({
+                'message': 'Student added successfully',
+                'student': StudentSerializer(student).data
+            }, status=201)
+            
+        except Exception as e:
+            return Response({
+                'error': f'Failed to add student: {str(e)}'
+            }, status=500)
