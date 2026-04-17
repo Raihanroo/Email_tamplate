@@ -99,6 +99,7 @@ class UploadStudentsView(APIView):
 
         imported = 0
         skipped_rows = 0
+        duplicate_emails = []
 
         for index, row in df.iterrows():
             try:
@@ -108,6 +109,7 @@ class UploadStudentsView(APIView):
                 link = row[column_mapping['Link']] if 'Link' in column_mapping else None
                 mobile = row[column_mapping.get('Mobile', '')] if 'Mobile' in column_mapping and not pd.isna(row.get(column_mapping.get('Mobile', ''))) else None
                 
+                # Skip empty rows
                 if pd.isna(name) or pd.isna(email) or pd.isna(course_name) or pd.isna(link):
                     skipped_rows += 1
                     continue
@@ -116,27 +118,22 @@ class UploadStudentsView(APIView):
                     skipped_rows += 1
                     continue
                 
-                if replace_all:
-                    Student.objects.create(
-                        email=email,
-                        name=name,
-                        course_name=course_name,
-                        link=link,
-                        mobile=str(mobile).strip() if mobile else None,
-                    )
+                # Check for duplicate email (works for both replace_all True/False)
+                student, created = Student.objects.get_or_create(
+                    email=str(email).strip(),
+                    defaults={
+                        'name': str(name).strip(),
+                        'course_name': str(course_name).strip(),
+                        'link': str(link).strip(),
+                        'mobile': str(mobile).strip() if mobile else '',
+                    }
+                )
+                
+                if created:
                     imported += 1
                 else:
-                    student, created = Student.objects.get_or_create(
-                        email=email,
-                        defaults={
-                            'name': name,
-                            'course_name': course_name,
-                            'link': link,
-                            'mobile': str(mobile).strip() if mobile else None,
-                        }
-                    )
-                    if created:
-                        imported += 1
+                    # Email already exists - skip
+                    duplicate_emails.append(str(email).strip())
                         
             except Exception as e:
                 return Response({'error': f'Error processing row: {str(e)}'}, status=400)
@@ -148,6 +145,11 @@ class UploadStudentsView(APIView):
             'pending': pending_count,
             'info': f'Use "Create Template" button to send custom emails to {pending_count} students.'
         }
+        
+        # Add duplicate info if any
+        if duplicate_emails:
+            response_data['duplicates_skipped'] = len(duplicate_emails)
+            response_data['duplicate_info'] = f'{len(duplicate_emails)} duplicate emails were skipped'
         
         if deleted_count > 0:
             response_data['deleted_count'] = deleted_count
