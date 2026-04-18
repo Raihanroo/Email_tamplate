@@ -1,0 +1,163 @@
+{
+  "info": {
+    "name": "Email Automation API",
+    "description": "Complete API collection for Email Automation System - Innovative Skills LTD",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Get All Students",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/students/",
+          "protocol": "http",
+          "host": ["127", "0", "0", "1"],
+          "port": "8000",
+          "path": ["api", "students", ""]
+        },
+        "description": "Retrieve list of all students from database"
+      },
+      "response": []
+    },
+    {
+      "name": "2. Upload Excel File",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "replace_all",
+              "value": "false",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/upload/",
+          "protocol": "http",
+          "host": ["127", "0", "0", "1"],
+          "port": "8000",
+          "path": ["api", "upload", ""]
+        },
+        "description": "Upload Excel file with student data. Set replace_all to true to delete existing data first."
+      },
+      "response": []
+    },
+    {
+      "name": "3. Add Single Student",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Test Student\",\n  \"email\": \"test@example.com\",\n  \"mobile\": \"01712345678\",\n  \"course_name\": \"Python Programming\",\n  \"link\": \"https://example.com/python\"\n}"
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/add-student/",
+          "protocol": "http",
+          "host": ["127", "0", "0", "1"],
+          "port": "8000",
+          "path": ["api", "add-student", ""]
+        },
+        "description": "Add a single student manually. Returns error if email already exists."
+      },
+      "response": []
+    },
+    {
+      "name": "4. Update Student",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"test@example.com\",\n  \"name\": \"Updated Name\",\n  \"mobile\": \"01798765432\",\n  \"course_name\": \"Django Course\",\n  \"link\": \"https://example.com/django\"\n}"
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/update-student/",
+          "protocol": "http",
+          "host": ["127", "0", "0", "1"],
+          "port": "8000",
+          "path": ["api", "update-student", ""]
+        },
+        "description": "Update existing student by email. All fields except email can be updated."
+      },
+      "response": []
+    },
+    {
+      "name": "5. Send Custom Email Template",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"subject\": \"Welcome to Our Course\",\n  \"message\": \"Hello {name},\\n\\nYou are interested in {course_name}.\\n\\nClick the button below:\\n\\n{link}\\n\\nBest regards,\\nInnovative Skills LTD\"\n}"
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/send-template/",
+          "protocol": "http",
+          "host": ["127", "0", "0", "1"],
+          "port": "8000",
+          "path": ["api", "send-template", ""]
+        },
+        "description": "Send custom email template to all students. Use placeholders: {name}, {course_name}, {link}"
+      },
+      "response": []
+    },
+    {
+      "name": "6. Delete Single Student",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/delete-student/1/",
+          "protocol": "http",
+          "host": ["127", "0", "0", "1"],
+          "port": "8000",
+          "path": ["api", "delete-student", "1", ""]
+        },
+        "description": "Delete a specific student by ID. Replace '1' with actual student ID."
+      },
+      "response": []
+    },
+    {
+      "name": "7. Delete All Students",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/delete-all/",
+          "protocol": "http",
+          "host": ["127", "0", "0", "1"],
+          "port": "8000",
+          "path": ["api", "delete-all", ""]
+        },
+        "description": "Delete all students from database. Use with caution!"
+      },
+      "response": []
+    }
+  ]
+}
