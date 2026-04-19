@@ -734,15 +734,21 @@
                     </div>
                     <div class="form-group">
                         <label for="studentCourse">Course Name *</label>
-                        <select id="studentCourse" required>
-                            <option value="">Select a course</option>
-                        </select>
+                        <input 
+                            type="text" 
+                            id="studentCourse" 
+                            placeholder="Enter course name"
+                            required
+                        >
                     </div>
                     <div class="form-group">
                         <label for="studentLink">Link *</label>
-                        <select id="studentLink" required>
-                            <option value="">Select a link</option>
-                        </select>
+                        <input 
+                            type="url" 
+                            id="studentLink" 
+                            placeholder="Enter course link (https://...)"
+                            required
+                        >
                     </div>
                 </form>
             </div>
@@ -778,8 +784,6 @@
         const stats = document.getElementById('stats');
         
         let selectedFile = null;
-        let availableCourses = new Set();
-        let availableLinks = new Set();
 
         // Upload area click
         uploadArea.addEventListener('click', () => fileInput.click());
@@ -866,7 +870,6 @@
 
         // Data Entry Modal handlers
         dataEntryBtn.addEventListener('click', () => {
-            populateDropdowns();
             dataEntryModal.style.display = 'block';
         });
 
@@ -975,32 +978,6 @@
             }
         }
 
-        // Populate dropdowns with unique courses and links
-        function populateDropdowns() {
-            const courseSelect = document.getElementById('studentCourse');
-            const linkSelect = document.getElementById('studentLink');
-            
-            // Clear existing options except first
-            courseSelect.innerHTML = '<option value="">Select a course</option>';
-            linkSelect.innerHTML = '<option value="">Select a link</option>';
-            
-            // Add unique courses
-            availableCourses.forEach(course => {
-                const option = document.createElement('option');
-                option.value = course;
-                option.textContent = course;
-                courseSelect.appendChild(option);
-            });
-            
-            // Add unique links
-            availableLinks.forEach(link => {
-                const option = document.createElement('option');
-                option.value = link;
-                option.textContent = link.length > 50 ? link.substring(0, 50) + '...' : link;
-                linkSelect.appendChild(option);
-            });
-        }
-
         // Refresh button
         refreshBtn.addEventListener('click', loadStudents);
 
@@ -1040,14 +1017,6 @@
             try {
                 const response = await fetch('/api/students/');
                 const students = await response.json();
-
-                // Collect unique courses and links
-                availableCourses.clear();
-                availableLinks.clear();
-                students.forEach(student => {
-                    if (student.course_name) availableCourses.add(student.course_name);
-                    if (student.link) availableLinks.add(student.link);
-                });
 
                 if (students.length === 0) {
                     document.getElementById('tableContent').innerHTML = `
