@@ -1300,7 +1300,22 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    showAlert('success', data.message + ' - Table will update automatically...');
+                    let message = data.message + ' - Table will update automatically...';
+                    
+                    // Show failed emails if any
+                    if (data.failed_emails && data.failed_emails.length > 0) {
+                        message += `\n\n⚠️ ${data.failed_emails.length} emails failed:\n`;
+                        data.failed_emails.slice(0, 5).forEach(fail => {
+                            message += `\n• ${fail}`;
+                        });
+                        if (data.failed_emails.length > 5) {
+                            message += `\n... and ${data.failed_emails.length - 5} more`;
+                        }
+                        showAlert('warning', message);
+                    } else {
+                        showAlert('success', message);
+                    }
+                    
                     templateModal.style.display = 'none';
                     templateForm.reset();
                     
