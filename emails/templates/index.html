@@ -1097,8 +1097,8 @@
                                 <td>${student.mobile || 'N/A'}</td>
                                 <td>${student.course_name}</td>
                                 <td>
-                                    <a href="#" class="link-btn" onclick="handleLinkClick(event, ${student.id}, '${student.link}')">
-                                        🔗 View & Notify
+                                    <a href="${student.link}" target="_blank" rel="noopener noreferrer" class="link-btn" title="Open course link">
+                                        🔗 Open Link
                                     </a>
                                 </td>
                                 <td>
